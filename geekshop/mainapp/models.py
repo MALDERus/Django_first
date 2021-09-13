@@ -9,6 +9,7 @@ class ProductCategory(models.Model):
     def __str__(self):
         return self.name
 
+
 class Product(models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     name = models.CharField(verbose_name='Имя продукта', max_length=128)
@@ -19,4 +20,5 @@ class Product(models.Model):
     quantity = models.PositiveIntegerField(verbose_name='Количество на складе', default=0)
 
     def __str__(self):
-        return f"{self.name}{self.category.name}"
+        return f"{self.name} {self.category.name}"
+
