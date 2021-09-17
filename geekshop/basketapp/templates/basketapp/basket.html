@@ -1,31 +1,12 @@
+{% extends 'basketapp/base.html' %}
 {% load static %}
-<!DOCTYPE html>
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>
-        {% block title %}
-            {{ title|title }}
-        {% endblock %}
-    </title>
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-    <link rel="stylesheet" href="{% static 'fonts/font-awesome/css/font-awesome.css' %}">
-</head>
-<body>
-    <div class="container">
-        {% block content %}
-        <h2>Корзина</h2>
-            {% for item in basket %}
-                <div class="block">
-                    <img src="/media/{{ item.product.image }}" alt="{{ item.product.short_desc }}">
-                    <p>{{ item.product.name }}</p>
-                    <p>Цена {{ item.product.price }}</p>
-                    <p>Количество {{ item.quantity }}</p>
-                    <a href="{% url 'basket:remove' item.pk %}">Удалить</a>
-                </div>
-            {% endfor %}
-        {% endblock %}
+
+{% block content %}
+    <div class="basket_list">
+        {% include 'basketapp/includes/inc_basket_list.html' %}
     </div>
-</body>
-</html>
+    <button class="btn btn-round">
+        <a href="{% url 'main' %}">на главную</a>
+    </button>
+{% endblock %}
