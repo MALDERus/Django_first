@@ -1,15 +1,19 @@
 window.onload = function () {
-    $('.basket_list').on('click', 'input[type="number"]', function () {
-        var t_href = event.target;
+    $('.basket_list').on( types:'click', selector: 'input[type="number"]', data: function () {
+        let target_href = event.target;
 
-        $.ajax({
-            url: "/basket/edit/" + t_href.name + "/" + t_href.value + "/",
+        if (target_href) {
+            $.ajax( url: {
+                url: "/basket/edit/" + target_href.name + "/" + target_href.value + "/",
 
-            success: function (data) {
-                $('.basket_list').html(data.result);
-            },
-        });
+                success: function (data) {
+                    $('.basket_list').html(data.result);
+                    console.log('ajax done');
+                },
+            });
 
+        }
         event.preventDefault();
     });
-}
+
+};
