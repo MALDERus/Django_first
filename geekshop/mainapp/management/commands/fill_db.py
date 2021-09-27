@@ -3,6 +3,7 @@ import os
 
 from django.core.management.base import BaseCommand
 from mainapp.models import ProductCategory, Product
+from authapp.models import ShopUser
 
 
 JSON_PATH = 'mainapp/json'
@@ -33,3 +34,5 @@ class Command(BaseCommand):
             product['category'] = _category
             new_product = Product(**product)
             new_product.save()
+
+        super_user = ShopUser.objects.create_superuser('django', '', 'geekbrains', age=30)

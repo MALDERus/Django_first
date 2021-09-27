@@ -1,15 +1,17 @@
-import os
-import random
-import datetime
-import json
-
-from basketapp.models import Basket
+import datetime, random, os, json
 from django.shortcuts import render, get_object_or_404
-from mainapp.models import Product, ProductCategory
+from mainapp.models import ProductCategory, Product
+from basketapp.models import Basket
 
-# JSON_PATH = 'mainapp/json'
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-# Create your views here.
+JSON_PATH = 'mainapp/json'
+
+
+def load_from_json(file_name):
+    with open(os.path.join(JSON_PATH, file_name + '.json'), 'r') as infile:
+        return json.load(infile)
+
 
 def get_basket(user):
     if user.is_authenticated:
@@ -19,24 +21,20 @@ def get_basket(user):
 
 
 def get_hot_product():
-    products = Product.objects.all()
+    products = Product.objects.filter(is_active=True, category__is_active=True)
 
     return random.sample(list(products), 1)[0]
 
 
 def get_same_products(hot_product):
-    same_products = Product.objects.filter(category=hot_product.category). \
-                        exclude(pk=hot_product.pk)[:3]
+    same_products = Product.objects.filter(category=hot_product.category, is_active=True).exclude(pk=hot_product.pk)[:3]
 
     return same_products
 
-# def load_from_json(file_name):
-#     with open(os.path.join(JSON_PATH, file_name + '.json'), 'r') as infile:
-#         return json.load(infile)
 
 def main(request):
-    title = 'Главная'
-    products = Product.objects.all()[:3]
+    title = 'главная'
+    products = Product.objects.filter(is_active=True, category__is_active=True)[:3]
 
     content = {
         'title': title,
@@ -47,39 +45,36 @@ def main(request):
     return render(request, 'mainapp/index.html', content)
 
 
-def product(request, pk):
-    title = 'продукт'
-
-    content = {
-        'title': title,
-        'links_menu': ProductCategory.objects.all(),
-        'product': get_object_or_404(Product, pk=pk),
-        'basket': get_basket(request.user),
-    }
-
-    return render(request, 'mainapp/product.html', content)
-
-def products(request, pk=None):
+def products(request, pk=None, page=1):
     title = 'продукты'
-    links_menu = ProductCategory.objects.all()
+    links_menu = ProductCategory.objects.filter(is_active=True)
     basket = get_basket(request.user)
 
-    if request.user.is_authenticated:
-        basket = Basket.objects.filter(user=request.user)
-
-    if pk:
+    if pk is not None:
         if pk == 0:
-            category = {'name': 'все'}
-            products = Product.objects.all().order_by('price')
+            category = {
+                'pk': 0,
+                'name': 'все'
+            }
+            products = Product.objects.filter(is_active=True, category__is_active=True).order_by('price')
         else:
             category = get_object_or_404(ProductCategory, pk=pk)
-            products = Product.objects.filter(category__pk=pk).order_by('price')
+            products = Product.objects.filter(category__pk=pk, is_active=True, category__is_active=True).order_by(
+                'price')
+
+        paginator = Paginator(products, 2)
+        try:
+            products_paginator = paginator.page(page)
+        except PageNotAnInteger:
+            products_paginator = paginator.page(1)
+        except EmptyPage:
+            products_paginator = paginator.page(paginator.num_pages)
 
         content = {
             'title': title,
             'links_menu': links_menu,
             'category': category,
-            'products': products,
+            'products': products_paginator,
             'basket': basket,
         }
 
@@ -99,16 +94,30 @@ def products(request, pk=None):
     return render(request, 'mainapp/products.html', content)
 
 
-def contact(request):
-    title = 'о нас'
-    visit_date = datetime.datetime.now()
+def product(request, pk):
+    title = 'продукты'
+    links_menu = ProductCategory.objects.filter(is_active=True)
 
-    # locations = load_from_json('contact_locations')
+    product = get_object_or_404(Product, pk=pk)
 
     content = {
         'title': title,
-        'visit_date': visit_date,
-        # 'locations': locations,
+        'links_menu': links_menu,
+        'product': product,
         'basket': get_basket(request.user),
     }
+    return render(request, 'mainapp/product.html', content)
+
+
+def contact(request):
+    title = 'о нас'
+
+    locations = load_from_json('contact_locations')
+
+    content = {
+        'title': title,
+        'locations': locations,
+        'basket': get_basket(request.user),
+    }
+
     return render(request, 'mainapp/contact.html', content)

@@ -11,8 +11,6 @@ class Command(BaseCommand):
         user_count = 10
 
         ShopUser.objects.all().delete()
-        super_user = ShopUser.objects.create_superuser('django', '', 'geekbrains', age=30)
-
         for _ in range(user_count):
             person = Person('en')
             new_user = ShopUser(username=person.username(),
@@ -24,3 +22,5 @@ class Command(BaseCommand):
                                 avatar=person.avatar()
                                 )
             new_user.save()
+
+        super_user = ShopUser.objects.create_superuser('django', '', 'geekbrains', age=30)
