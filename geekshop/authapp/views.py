@@ -13,6 +13,7 @@ from authapp.models import ShopUser
 from django.db import transaction
 from authapp.forms import ShopUserProfileEditForm
 
+
 def login(request):
     title = 'вход'
 
@@ -51,6 +52,7 @@ def register(request):
 
     if request.method == 'POST':
         register_form = ShopUserRegisterForm(request.POST, request.FILES)
+
         if register_form.is_valid():
             user = register_form.save()
             if send_verify_mail(user):
@@ -59,10 +61,12 @@ def register(request):
             else:
                 print('ошибка отправки сообщения')
                 return HttpResponseRedirect(reverse('auth:login'))
-        else:
-            register_form = ShopUserRegisterForm()
-            content = {'title': title, 'register_form': register_form}
-            return render(request, 'authapp/register.html', content)
+    else:
+        register_form = ShopUserRegisterForm()
+
+    content = {'title': title, 'register_form': register_form}
+
+    return render(request, 'authapp/register.html', content)
 
 
 @transaction.atomic
@@ -95,8 +99,7 @@ def send_verify_mail(user):
 
     title = f'Подтверждение учетной записи {user.username}'
 
-    message = f'Для подтверждения учетной записи {user.username} на портале \
-{settings.DOMAIN_NAME} перейдите по ссылке: \n{settings.DOMAIN_NAME}{verify_link}'
+    message = f'Для подтверждения учетной записи {user.username} на портале {settings.DOMAIN_NAME} перейдите по ссылке: \n{settings.DOMAIN_NAME}{verify_link}'
 
     print(f'from: {settings.EMAIL_HOST_USER}, to {user.email}')
     return send_mail(title, message, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
