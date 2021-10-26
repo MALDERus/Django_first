@@ -3,6 +3,8 @@ from django.db import models
 from django.conf import settings
 from mainapp.models import Product
 
+from django.utils.functional import cached_property
+
 
 # заменяем на декораторы(сигналы)
 # class BasketQuerySet(models.QuerySet):
@@ -29,19 +31,21 @@ class Basket(models.Model):
         "return cost of all products this type"
         return self.product.price * self.quantity
 
-    @property
-    def total_quantity(self):
-        "return total quantity for user"
-        _items = Basket.objects.filter(user=self.user)
-        _totalquantity = sum(list(map(lambda x: x.quantity, _items)))
-        return _totalquantity
+    # заменили на кэшировынные методы, строки 70-80
+    # @property
+    # def total_quantity(self):
+    #     "return total quantity for user"
+    #     _items = Basket.objects.filter(user=self.user)
+    #     _totalquantity = sum(list(map(lambda x: x.quantity, _items)))
+    #     return _totalquantity
 
-    @property
-    def total_cost(self):
-        "return total cost for user"
-        _items = Basket.objects.filter(user=self.user)
-        _totalcost = sum(list(map(lambda x: x.product_cost, _items)))
-        return _totalcost
+    # заменили на кэшировынные методы, строки 70-80
+    # @property
+    # def total_cost(self):
+    #     "return total cost for user"
+    #     _items = Basket.objects.filter(user=self.user)
+    #     _totalcost = sum(list(map(lambda x: x.product_cost, _items)))
+    #     return _totalcost
 
     @staticmethod
     def get_items(user):
@@ -62,6 +66,18 @@ class Basket(models.Model):
     @staticmethod
     def get_item(pk):
         return Basket.objects.filter(pk=pk). first()
+
+    @cached_property
+    def get_items_cached(self):
+        return self.user.basket.select_related()
+
+    def get_total_quantity(self):
+        _items = self.get_items_cached
+        return sum(list(map(lambda x: x.quantity, _items)))
+
+    def get_total_cost(self):
+        _items = self.get_items_cached
+        return sum(list(map(lambda x: x.product_cost, _items)))
 
     # заменили на QuerySet
     # def delete(self):

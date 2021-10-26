@@ -30,15 +30,14 @@ class Order(models.Model):
         (READY, 'готов к выдаче'),
         (CANCEL, 'отменен'),
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created = models.DateTimeField(verbose_name='создан', auto_now_add=True)
     updated = models.DateTimeField(verbose_name='обновлен', auto_now=True)
     status = models.CharField(verbose_name='статус',
                               max_length=3,
                               choices=ORDER_STATUS_CHOICES,
                               default=FORMING)
-    is_active = models.BooleanField(verbose_name='активен', default=True)
+    is_active = models.BooleanField(verbose_name='активен', db_index=True, default=True)
 
     class Meta:
         ordering = ('-created',)
@@ -59,6 +58,13 @@ class Order(models.Model):
     def get_total_cost(self):
         items = self.orderitems.select_related()
         return sum(list(map(lambda x: x.quantity * x.product.price, items)))
+
+    def get_summary(self):
+        items = self.orderitems.select_related()
+        return {
+            'total_cost': sum(list(map(lambda x: x.quantity * x.product.price, items))),
+            'total_quantity': sum(list(map(lambda x: x.quantity, items)))
+        }
 
     # переопределяем метод, удаляющий объект
     def delete(self):
