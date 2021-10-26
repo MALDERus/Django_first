@@ -1,3 +1,4 @@
+import logging
 import random, os, json
 from django.shortcuts import render, get_object_or_404
 from mainapp.models import ProductCategory, Product
@@ -14,6 +15,7 @@ from django.views.decorators.cache import never_cache
 
 JSON_PATH = 'mainapp/json'
 
+logger = logging.getLogger('log')
 
 def get_links_menu():
    if settings.LOW_CACHE:
@@ -127,6 +129,7 @@ def main(request):
 def products(request, pk=None, page=1):
     title = 'продукты'
     links_menu = get_links_menu()
+    logger.info(f'{request.user} - {request.body} - {request.headers} - get products')
 
     # Заменили на функции выше
     # title = 'продукты'

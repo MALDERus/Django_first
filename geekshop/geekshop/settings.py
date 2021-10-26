@@ -151,9 +151,9 @@ if DEBUG:
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -226,3 +226,28 @@ if os.name == 'posix':
    }
 
 LOW_CACHE = True
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'basic': {
+            'format': '\n%(asctime)s - %(levelname)s - %(module)s - %(message)s'
+        }
+    },
+    'handlers': {
+        'basic': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'log.log',
+            'formatter': 'basic',
+        }
+    },
+    'loggers': {
+        'log': {
+            'level': 'INFO',
+            'handlers': ['basic']
+        }
+    }
+}
